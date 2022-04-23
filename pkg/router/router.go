@@ -12,6 +12,7 @@ func Setup() *gin.Engine {
 	userCollectionSetting := repository.UserCollectionSetting()
 	userService := service.UserService{UserRepo: *userCollectionSetting}
 	controller := api.UserController{UserServices: &userService}
+
 	router.POST("/insertoneuser", controller.InsertOneUser)
 	return router
 }

@@ -1,28 +1,21 @@
 package config
 
-import (
-	"github.com/joho/godotenv"
-	"os"
-)
-
 var Config *Configuration
 
 type Configuration struct {
-	MongoDb   string `mapstructure:"MONGODB_URI"`
-	Port      string `mapstructure:"PORT"`
-	AppSecret string `mapstructure:"APP_SECRET"`
+	MongoDb string `mapstructure:"MONGODB_URI"`
+	Port    string `mapstructure:"PORT"`
 }
 
 func SetupConfig() (err error) {
-	config := godotenv.Load("./pkg/config/.env")
+	//	config := godotenv.Load("./pkg/config/.env")
 
-	if config != nil {
-		os.Exit(1)
-	}
+	/*if config != nil {
+		return nil
+	}*/
 	configuration := &Configuration{
-		MongoDb:   os.Getenv("MONGODB_URI"),
-		Port:      os.Getenv("PORT"),
-		AppSecret: os.Getenv("APP_SECRET"),
+		MongoDb: "mongodb+srv://eminoz:Eminemin.07@cluster0.cvbx9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+		Port:    "3000",
 	}
 	Config = configuration
 	return

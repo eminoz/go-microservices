@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  microservice:
+    build: .
+    ports:
+      - 3000:3000
+    environment: # Pass environment variables to the service
+     PORT: 3000
+     MONGODB_URI: mongodb+srv://eminoz:Eminemin.07@cluster0.cvbx9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+     APP_SECRET: secretkey
+
+
