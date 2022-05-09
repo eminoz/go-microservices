@@ -24,7 +24,8 @@ func (c *UserController) DeleteOneUser(ctx *gin.Context) {
 		ctx.JSON(404, gin.H{"error": "user not found"})
 		return
 	}
-	ctx.JSON(http.StatusOK, deleteOneUser)
+	ctx.JSON(http.StatusOK, gin.H{"deletedUser": deleteOneUser})
+	//ctx.JSON(http.StatusOK, deleteOneUser)
 }
 func (c *UserController) UpdateOneUser(ctx *gin.Context) {
 	updateOneUser, err := c.UserServices.UpdateOneUser(ctx)
@@ -50,7 +51,6 @@ func (c *UserController) GetOneUser(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"user": oneUser})
 }
-
 func (c *UserController) InsertOneUser(ctx *gin.Context) {
 	insertOneResult, err := c.UserServices.InsertOneUser(ctx)
 
