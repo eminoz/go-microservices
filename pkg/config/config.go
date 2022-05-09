@@ -24,6 +24,7 @@ func SetupConfig() (err error) {
 		Port:      os.Getenv("PORT"),
 		AppSecret: os.Getenv("APP_SECRET"),
 	}
+
 	Config = configuration
 	return
 }
