@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetOneUser(ctx *gin.Context, filter bson.D) (bson.M, error)
 	GetAllUser(ctx *gin.Context) (*[]bson.M, error)
 	UpdateUser(ctx *gin.Context, filter *primitive.D, update *primitive.D) (*mongo.UpdateResult, error)
+	DeleteOneUser(ctx *gin.Context, filter *primitive.D) *bson.M
 }
 type UserService struct {
 	UserRepo UserRepository
@@ -70,4 +71,15 @@ func (u *UserService) UpdateOneUser(ctx *gin.Context) (*mongo.UpdateResult, erro
 	updateUser, err := u.UserRepo.UpdateUser(ctx, &filter, &update)
 
 	return updateUser, nil
+}
+func (u *UserService) DeleteOneUser(ctx *gin.Context) (*bson.M, error) {
+	userId := ctx.Param("id")
+	id, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.D{{"_id", id}}
+	deletedUser := u.UserRepo.DeleteOneUser(ctx, &filter)
+
+	return deletedUser, nil
 }

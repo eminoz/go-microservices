@@ -43,3 +43,9 @@ func (c *UserCollection) UpdateUser(ctx *gin.Context, filter *primitive.D, updat
 	return updateOne, nil
 
 }
+func (c *UserCollection) DeleteOneUser(ctx *gin.Context, filter *primitive.D) *bson.M {
+	findOneAndDelete := c.collection.FindOneAndDelete(ctx, filter)
+	var deletedDocument bson.M
+	findOneAndDelete.Decode(&deletedDocument)
+	return &deletedDocument
+}

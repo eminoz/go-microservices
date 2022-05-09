@@ -17,6 +17,6 @@ func Setup() *gin.Engine {
 	router.GET("/getoneuser/:id", controller.GetOneUser)
 	router.GET("/getallusers", controller.GetAllUser)
 	router.PUT("/updateuser/:id", controller.UpdateOneUser)
-	router.DELETE("/deleteuser/:id")
+	router.DELETE("/deleteuser/:id", controller.DeleteOneUser)
 	return router
 }
