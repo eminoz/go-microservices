@@ -4,6 +4,7 @@
     <option name="excludedPackages">
       <array>
         <option value="builtin" />
+        <option value="go.mongodb.org/mongo-driver/mongo" />
       </array>
     </option>
   </component>

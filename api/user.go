@@ -8,8 +8,8 @@ import (
 )
 
 type UserService interface {
-	InsertOneUser(ctx *gin.Context) (*mongo.InsertOneResult, error)
-	GetOneUser(ctx *gin.Context) (*bson.M, error)
+	InsertOneUser(ctx *gin.Context) (interface{}, error)
+	GetOneUser(ctx *gin.Context) (interface{}, error)
 	GetAllUser(ctx *gin.Context) (*[]bson.M, error)
 	UpdateOneUser(ctx *gin.Context) (*mongo.UpdateResult, error)
 	DeleteOneUser(ctx *gin.Context) (*bson.M, error)
@@ -59,6 +59,6 @@ func (c *UserController) InsertOneUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"userId": insertOneResult.InsertedID})
+	ctx.JSON(http.StatusOK, gin.H{"userId": insertOneResult})
 
 }

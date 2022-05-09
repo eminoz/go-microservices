@@ -8,12 +8,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (c *UserCollection) InsertUser(cnt *gin.Context, user *model.User) (*mongo.InsertOneResult, error) {
+func (c *UserCollection) InsertUser(cnt *gin.Context, user *model.User) (interface{}, error) {
 	insertOneResult, err := c.collection.InsertOne(cnt, user)
 	if err != nil {
 		return nil, err
 	}
-	return insertOneResult, nil
+	return insertOneResult.InsertedID, nil
 }
 func (c *UserCollection) GetOneUser(ctx *gin.Context, filter bson.D) (bson.M, error) {
 	var result bson.M

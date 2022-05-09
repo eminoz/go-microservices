@@ -1,6 +1,12 @@
 version: '3.9'
 
 services:
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - 'redis_data:/local-data/:/data'
   go-microservices:
     build: .
     ports:
@@ -10,4 +16,6 @@ services:
      MONGODB_URI: mongodb+srv://eminoz:Q8DZaO6sdnBDA4Uj@cluster0.cvbx9.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
      APP_SECRET: secretkey
 
-
+volumes:
+  redis_data:
+    driver: local
