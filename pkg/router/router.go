@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/eminoz/go-microservices/api"
+	"github.com/eminoz/go-microservices/pkg/middleware"
 	"github.com/eminoz/go-microservices/redisContoller"
 	"github.com/eminoz/go-microservices/repository"
 	"github.com/eminoz/go-microservices/service"
@@ -14,8 +15,8 @@ func Setup() *gin.Engine {
 	userCollectionSetting := repository.UserCollectionSetting()
 	userService := service.UserService{UserRepo: userCollectionSetting, UserRedisRepo: redisClient}
 	controller := api.UserController{UserServices: &userService}
-
-	router.POST("/insertoneuser", controller.InsertOneUser)
+	corsMiddleware := middleware.CORSMiddleware()
+	router.POST("/insertoneuser", corsMiddleware, controller.InsertOneUser)
 	router.GET("/getoneuser/:id", controller.GetOneUser)
 	router.GET("/getallusers", controller.GetAllUser)
 	router.PUT("/updateuser/:id", controller.UpdateOneUser)

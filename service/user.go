@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/eminoz/go-microservices/model"
 	"github.com/gin-gonic/gin"
@@ -57,7 +58,14 @@ func (u *UserService) GetOneUser(ctx *gin.Context) (interface{}, error) {
 		}
 		return &oneUser, nil
 	}
-	return result, nil
+	fmt.Printf(result)
+	var user model.User
+	err = json.Unmarshal([]byte(result), &user)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(user)
+	return user, nil
 
 }
 func (u *UserService) GetAllUser(ctx *gin.Context) (*[]bson.M, error) {

@@ -11,7 +11,6 @@ func main() {
 	config.SetupConfig()
 	database.SetDatabase()
 	redisconnection.NewRedis()
-
 	setup := router.Setup()
 	setup.Run()
 }

@@ -25,7 +25,6 @@ func (c *Client) SetUser(ctx *gin.Context, id string, user *model.User) *redis.S
 		Surname: user.Surname,
 		Email:   user.Email,
 	}
-	json.Marshal(user)
 	set := c.client.Set(ctx, u.Id, u, 0)
 	fmt.Println(set)
 	return set
