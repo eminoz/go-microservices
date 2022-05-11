@@ -17,6 +17,7 @@ func Setup() *gin.Engine {
 	controller := api.UserController{UserServices: &userService}
 	corsMiddleware := middleware.CORSMiddleware()
 	router.POST("/insertoneuser", corsMiddleware, controller.InsertOneUser)
+	router.POST("/login", controller.Login)
 	router.GET("/getoneuser/:id", controller.GetOneUser)
 	router.GET("/getallusers", controller.GetAllUser)
 	router.PUT("/updateuser/:id", controller.UpdateOneUser)

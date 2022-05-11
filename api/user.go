@@ -13,11 +13,20 @@ type UserService interface {
 	GetAllUser(ctx *gin.Context) (*[]bson.M, error)
 	UpdateOneUser(ctx *gin.Context) (*mongo.UpdateResult, error)
 	DeleteOneUser(ctx *gin.Context) (*bson.M, error)
+	Login(ctx *gin.Context) (interface{}, error)
 }
 type UserController struct {
 	UserServices UserService
 }
 
+func (c *UserController) Login(ctx *gin.Context) {
+	login, err := c.UserServices.Login(ctx)
+	if err != nil {
+		ctx.JSON(404, gin.H{"error": "user not found"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"auth": login})
+}
 func (c *UserController) DeleteOneUser(ctx *gin.Context) {
 	deleteOneUser, err := c.UserServices.DeleteOneUser(ctx)
 	if err != nil {

@@ -9,22 +9,26 @@ import (
 )
 
 func (c *UserCollection) InsertUser(cnt *gin.Context, user *model.User) (interface{}, error) {
-	insertOneResult, err := c.collection.InsertOne(cnt, user)
+	insertOneResult, err := c.collection.InsertOne(cnt, *user)
 	if err != nil {
 		return nil, err
 	}
 	return insertOneResult.InsertedID, nil
 }
-func (c *UserCollection) GetOneUser(ctx *gin.Context, filter bson.D) (bson.M, error) {
-	var result bson.M
-	err := c.collection.FindOne(ctx, filter).Decode(&result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, err
-		}
-	}
-	return result, nil
+func (c *UserCollection) GetOneUser(ctx *gin.Context, filter bson.D) (model.Login, error) {
 
+	var user model.Login
+	err := c.collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		return model.Login{}, err
+	}
+	return user, nil
+
+	/*find, err := c.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return find, nil*/
 }
 func (c *UserCollection) GetAllUser(ctx *gin.Context) (*[]bson.M, error) {
 	resultUser, err := c.collection.Find(ctx, bson.D{})
