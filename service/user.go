@@ -3,13 +3,16 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/eminoz/go-microservices/model"
+	"github.com/eminoz/go-microservices/pkg/config"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 type UserRepository interface {
@@ -42,8 +45,25 @@ func (u *UserService) Login(ctx *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(oneUser.ID)
-	return oneUser, nil
+	//generate token
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["email"] = oneUser.Email
+	claims["_id"] = oneUser.ID
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	getConfig := config.GetConfig()
+
+	signedString, err := token.SignedString([]byte(getConfig.AppSecret))
+	if err != nil {
+		return nil, err
+	}
+
+	l := &model.LoginDal{
+		ID:    oneUser.ID,
+		Email: oneUser.Email,
+		Token: signedString,
+	}
+	return l, nil
 
 }
 func (u *UserService) InsertOneUser(ctx *gin.Context) (interface{}, error) {

@@ -26,3 +26,8 @@ type UserDal struct {
 	Surname string `json:"surname" bson:"surname"`
 	Email   string `json:"email" bson:"email"`
 }
+type LoginDal struct {
+	ID    primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Email string             `json:"email" bson:"email"`
+	Token string             `json:"token" bson:"token"`
+}

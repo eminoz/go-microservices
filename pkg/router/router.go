@@ -15,7 +15,9 @@ func Setup() *gin.Engine {
 	userCollectionSetting := repository.UserCollectionSetting()
 	userService := service.UserService{UserRepo: userCollectionSetting, UserRedisRepo: redisClient}
 	controller := api.UserController{UserServices: &userService}
+
 	corsMiddleware := middleware.CORSMiddleware()
+
 	router.POST("/insertoneuser", corsMiddleware, controller.InsertOneUser)
 	router.POST("/login", controller.Login)
 	router.GET("/getoneuser/:id", controller.GetOneUser)
