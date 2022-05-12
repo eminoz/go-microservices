@@ -63,6 +63,7 @@ func (u *UserService) Login(ctx *gin.Context) (interface{}, error) {
 		Email: oneUser.Email,
 		Token: signedString,
 	}
+
 	return l, nil
 
 }
