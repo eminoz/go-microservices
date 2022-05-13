@@ -9,7 +9,7 @@ import (
 )
 
 func (c *UserCollection) InsertUser(cnt *gin.Context, user *model.User) (interface{}, error) {
-	insertOneResult, err := c.collection.InsertOne(cnt, *user)
+	insertOneResult, err := c.collection.InsertOne(cnt, &user)
 	if err != nil {
 		return nil, err
 	}
@@ -29,6 +29,22 @@ func (c *UserCollection) GetOneUser(ctx *gin.Context, filter bson.D) (model.Logi
 		return nil, err
 	}
 	return find, nil*/
+}
+func (c *UserCollection) GetOneUserByEmail(ctx *gin.Context, filter bson.D) (bool, model.Email, error) {
+
+	var email model.Email
+	err := c.collection.FindOne(ctx, filter).Decode(&email)
+	documents, err := c.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return false, model.Email{}, nil
+	}
+	if documents != 1 {
+		return false, model.Email{}, nil
+	}
+	if err != nil {
+		return false, model.Email{}, err
+	}
+	return true, email, nil
 }
 func (c *UserCollection) GetAllUser(ctx *gin.Context) (*[]bson.M, error) {
 	resultUser, err := c.collection.Find(ctx, bson.D{})

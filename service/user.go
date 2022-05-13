@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 	"time"
 )
 
@@ -21,6 +22,7 @@ type UserRepository interface {
 	GetAllUser(ctx *gin.Context) (*[]bson.M, error)
 	UpdateUser(ctx *gin.Context, filter *primitive.D, update *primitive.D) (*mongo.UpdateResult, error)
 	DeleteOneUser(ctx *gin.Context, filter *primitive.D) *bson.M
+	GetOneUserByEmail(ctx *gin.Context, filter bson.D) (bool, model.Email, error)
 }
 type UserRedisRepository interface {
 	SetUser(ctx *gin.Context, id string, user *model.User) *redis.StatusCmd
@@ -72,11 +74,22 @@ func (u *UserService) InsertOneUser(ctx *gin.Context) (interface{}, error) {
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		return nil, err
 	}
+	filter := bson.D{{"email", user.Email}}
+	isExist, m, err2 := u.UserRepo.GetOneUserByEmail(ctx, filter)
+
+	if err2 != nil {
+		return nil, err2
+	}
+	fmt.Printf("%T", isExist)
+	if isExist == true {
+		ctx.JSON(http.StatusNotImplemented, gin.H{"message": "user exist"})
+		ctx.Abort()
+		return m, nil
+	}
 	password, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(password)
 	user.Password = string(password)
 
 	insertUser, err := u.UserRepo.InsertUser(ctx, user)
@@ -88,7 +101,6 @@ func (u *UserService) InsertOneUser(ctx *gin.Context) (interface{}, error) {
 	return insertUser, nil
 
 }
-
 func (u *UserService) GetOneUser(ctx *gin.Context) (interface{}, error) {
 	userId := ctx.Param("id")
 	id, err2 := primitive.ObjectIDFromHex(userId)

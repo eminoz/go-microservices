@@ -10,10 +10,23 @@ type UserCollection struct {
 	collection *mongo.Collection
 }
 
+type OrderCollection struct {
+	db         *mongo.Database
+	collection *mongo.Collection
+}
+
+func OrderCollectionSetting() *OrderCollection {
+	getDatabase := database.GetDatabase()
+	return &OrderCollection{
+		db:         getDatabase,
+		collection: getDatabase.Collection("order"),
+	}
+}
+
 func UserCollectionSetting() *UserCollection {
 	getDatabase := database.GetDatabase()
 	return &UserCollection{
 		db:         getDatabase,
-		collection: getDatabase.Collection("go-microservice"),
+		collection: getDatabase.Collection("user"),
 	}
 }

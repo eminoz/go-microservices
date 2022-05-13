@@ -15,13 +15,20 @@ func Setup() *gin.Engine {
 	userCollectionSetting := repository.UserCollectionSetting()
 	userService := service.UserService{UserRepo: userCollectionSetting, UserRedisRepo: redisClient}
 	controller := api.UserController{UserServices: &userService}
-	corsMiddleware := middleware.CORSMiddleware()
-	isAuth := middleware.IsAuth()
-	router.POST("/insertoneuser", corsMiddleware, controller.InsertOneUser)
+
+	corsMiddleware, isAuth := middleware.CORSMiddleware(), middleware.IsAuth()
+	router.Use(corsMiddleware)
+	router.POST("/insertoneuser", controller.InsertOneUser)
 	router.POST("/login", controller.Login)
 	router.GET("/getoneuser/:id", isAuth, controller.GetOneUser)
 	router.GET("/getallusers", isAuth, controller.GetAllUser)
-	router.PUT("/updateuser/:id", controller.UpdateOneUser)
-	router.DELETE("/deleteuser/:id", controller.DeleteOneUser)
+	router.PUT("/updateuser/:id", isAuth, controller.UpdateOneUser)
+	router.DELETE("/deleteuser/:id", isAuth, controller.DeleteOneUser)
+
+	orderCollectionSetting := repository.OrderCollectionSetting()
+	orderService := service.OrderService{OrderRepo: orderCollectionSetting}
+	orderController := api.OrderController{OrderService: &orderService}
+
+	router.POST("/createorder", orderController.CreateOrder)
 	return router
 }
