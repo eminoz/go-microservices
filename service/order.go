@@ -47,16 +47,29 @@ func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 		parse model to json
 		add filter
 		add update bson
+		if order already exist add the new order if not create order
 
 	*/
 	userId := ctx.Param("id")
-	orderModel := new(model.Product)
+	orderModel := new(model.Order)
 	ctx.ShouldBindJSON(&orderModel)
 	filter := bson.D{{"customerid", userId}}
-	update := bson.D{{Key: "$push", Value: bson.D{{"product", orderModel}}}}
-	addNewOrder, err := o.OrderRepo.AddNewOrder(ctx, filter, update)
-	if err != nil {
-		return nil, err
+	update := bson.D{{Key: "$push", Value: bson.D{{"product", orderModel.Product[0]}}}}
+	usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
+	if usersOrders.CustomerId == "" {
+
+		addNewOrder, err := o.OrderRepo.CreateAOrder(ctx, orderModel)
+
+		if err != nil {
+			return nil, err
+		}
+		return addNewOrder, nil
+	} else {
+		addNewOrder, err := o.OrderRepo.AddNewOrder(ctx, filter, update)
+		if err != nil {
+			return nil, err
+		}
+		return addNewOrder, nil
 	}
-	return addNewOrder, nil
+
 }
