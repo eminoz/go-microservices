@@ -30,5 +30,7 @@ func Setup() *gin.Engine {
 	orderController := api.OrderController{OrderService: &orderService}
 
 	router.POST("/createorder", orderController.CreateOrder)
+	router.GET("/getorders/:id", orderController.GetUserOrders)
+	router.POST("/addneworder/:id", orderController.AddNewOrder)
 	return router
 }

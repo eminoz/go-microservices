@@ -36,7 +36,7 @@ func (c *UserCollection) GetOneUserByEmail(ctx *gin.Context, filter bson.D) (boo
 	err := c.collection.FindOne(ctx, filter).Decode(&email)
 	documents, err := c.collection.CountDocuments(ctx, filter)
 	if err != nil {
-		return false, model.Email{}, nil
+		return false, email, nil
 	}
 	if documents != 1 {
 		return false, model.Email{}, nil
