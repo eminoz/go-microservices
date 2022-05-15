@@ -96,7 +96,7 @@ func (o *OrderService) RemoveOneOrder(ctx *gin.Context) (interface{}, error) {
 	usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
 	for _, currentOrders := range usersOrders.Product {
 		//remove edilecek ürün veri tabanında bir tane ise ürünü siler
-		if currentOrders.Quantity == 1 && currentOrders.ProductName == removeOrder.ProductName {
+		if currentOrders.Quantity == 1 && currentOrders.ProductName == removeOrder.ProductName || removeOrder.Quantity == currentOrders.Quantity {
 			filter := bson.D{{"customerid", userID}, {Key: "product.productname", Value: removeOrder.ProductName}}
 			update := bson.D{{Key: "$pull", Value: bson.D{{Key: "product", Value: bson.D{{Key: "productname", Value: removeOrder.ProductName}}}}}}
 			_, err := o.OrderRepo.UpdateOneOrder(ctx, filter, update)
@@ -112,8 +112,6 @@ func (o *OrderService) RemoveOneOrder(ctx *gin.Context) (interface{}, error) {
 			update := bson.D{{Key: "$set", Value: bson.D{{Key: "product.$.quantity", Value: currentOrders.Quantity - removeOrder.Quantity}}}}
 			o.OrderRepo.FindOrderAndUpdate(ctx, filter, update)
 
-		} else {
-			return "nothing to remove", nil
 		}
 	}
 	return nil, nil
