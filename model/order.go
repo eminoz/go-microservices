@@ -12,3 +12,8 @@ type Product struct {
 	Amount      int32   `json:"amount"`
 	Description string  `json:"description"`
 }
+
+type RemoveOneOrder struct {
+	ProductName string `json:"productName"`
+	Quantity    int32  `json:"quantity"`
+}

@@ -9,6 +9,7 @@ type OrderServices interface {
 	CreateOneOrder(ctx *gin.Context) (interface{}, error)
 	GetUsersOrders(ctx *gin.Context) (interface{}, error)
 	AddNewOrder(ctx *gin.Context) (interface{}, error)
+	RemoveOneOrder(ctx *gin.Context) (interface{}, error)
 }
 type OrderController struct {
 	OrderService OrderServices
@@ -35,6 +36,13 @@ func (o *OrderController) AddNewOrder(ctx *gin.Context) {
 	addNewOrder, err := o.OrderService.AddNewOrder(ctx)
 	if err != nil {
 		ctx.JSON(201, gin.H{"message": "order not created"})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"orders": addNewOrder})
+}
+func (o *OrderController) RemoveOneOrder(ctx *gin.Context) {
+	addNewOrder, err := o.OrderService.RemoveOneOrder(ctx)
+	if err != nil {
+		ctx.JSON(201, gin.H{"message": "order not updated"})
 	}
 	ctx.JSON(http.StatusOK, gin.H{"orders": addNewOrder})
 }

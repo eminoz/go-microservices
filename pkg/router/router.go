@@ -32,5 +32,6 @@ func Setup() *gin.Engine {
 	router.POST("/createorder", isAuth, orderController.CreateOrder)
 	router.GET("/getorders/:id", orderController.GetUserOrders)
 	router.POST("/addneworder/:id", orderController.AddNewOrder)
+	router.POST("/removeorder/:id", orderController.RemoveOneOrder)
 	return router
 }
