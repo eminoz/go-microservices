@@ -14,6 +14,7 @@ type OrderRepository interface {
 	FindOrderAndUpdate(ctx *gin.Context, filter bson.D, update bson.D) interface{}
 	UpdateOneOrder(ctx *gin.Context, filter bson.D, update bson.D) (interface{}, error)
 	Find(ctx *gin.Context, filter bson.D) (*mongo.Cursor, error)
+	DeleteOneOrder(ctx *gin.Context, filter bson.D) (interface{}, error)
 }
 type OrderService struct {
 	OrderRepo OrderRepository
@@ -42,7 +43,6 @@ func (o *OrderService) GetUsersOrders(ctx *gin.Context) (interface{}, error) {
 	}
 	return orders, nil
 }
-
 func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 
 	userId := ctx.Param("id")
@@ -51,7 +51,7 @@ func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 	filter := bson.D{{"customerid", userId}}
 
 	usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
-	if usersOrders.CustomerId == "" {
+	if usersOrders.CustomerId == "" || len(usersOrders.Product) == 0 {
 		addNewOrder, err := o.OrderRepo.CreateAOrder(ctx, orderModel)
 
 		if err != nil {
@@ -61,9 +61,7 @@ func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 	} else {
 
 		for _, incomingOrder := range orderModel.Product {
-			fmt.Println(incomingOrder.ProductName)
 			for _, currentOrder := range usersOrders.Product {
-
 				if incomingOrder.ProductName == currentOrder.ProductName {
 					filter := bson.D{{Key: "customerid", Value: userId}, {Key: "product.productname", Value: currentOrder.ProductName}}
 					update := bson.D{{Key: "$set", Value: bson.D{{"product.$.quantity", currentOrder.Quantity + incomingOrder.Quantity}}}}
@@ -86,6 +84,7 @@ func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 
 }
 func (o *OrderService) RemoveOneOrder(ctx *gin.Context) (interface{}, error) {
+
 	userID := ctx.Param("id")
 	removeOrder := new(model.RemoveOneOrder)
 	err := ctx.ShouldBindJSON(removeOrder)
@@ -94,27 +93,44 @@ func (o *OrderService) RemoveOneOrder(ctx *gin.Context) (interface{}, error) {
 	}
 	filter := bson.D{{"customerid", userID}}
 	usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
-	for _, currentOrders := range usersOrders.Product {
-		//remove edilecek ürün veri tabanında bir tane ise ürünü siler
-		if currentOrders.Quantity == 1 && currentOrders.ProductName == removeOrder.ProductName || removeOrder.Quantity == currentOrders.Quantity {
-			filter := bson.D{{"customerid", userID}, {Key: "product.productname", Value: removeOrder.ProductName}}
-			update := bson.D{{Key: "$pull", Value: bson.D{{Key: "product", Value: bson.D{{Key: "productname", Value: removeOrder.ProductName}}}}}}
-			_, err := o.OrderRepo.UpdateOneOrder(ctx, filter, update)
+	//in this concurrency frontend will not wait that the procces is done
+	go func(data model.Order, removeOrders *model.RemoveOneOrder) (interface{}, error) {
 
-			if err != nil {
-				return nil, err
+		for _, currentOrders := range data.Product {
+
+			//remove edilecek ürün veri tabanında bir tane ise ürünü siler
+			if currentOrders.Quantity == 1 && currentOrders.ProductName == removeOrders.ProductName || removeOrders.Quantity == currentOrders.Quantity {
+				filter := bson.D{{"customerid", userID}, {Key: "product.productname", Value: removeOrders.ProductName}}
+				update := bson.D{{Key: "$pull", Value: bson.D{{Key: "product", Value: bson.D{{Key: "productname", Value: removeOrders.ProductName}}}}}}
+				_, err := o.OrderRepo.UpdateOneOrder(ctx, filter, update)
+
+				if err != nil {
+					return nil, err
+				}
+
+			}
+			//remove edilecek ürün veri tabanında birden fazla ise ürününün quantitysini bir azaltır
+			if currentOrders.Quantity > 1 && currentOrders.ProductName == removeOrders.ProductName {
+				filter := bson.D{{"customerid", userID}, {Key: "product.productname", Value: currentOrders.ProductName}}
+				update := bson.D{{Key: "$set", Value: bson.D{{Key: "product.$.quantity", Value: currentOrders.Quantity - removeOrders.Quantity}}}}
+				o.OrderRepo.FindOrderAndUpdate(ctx, filter, update)
+
 			}
 
 		}
-		//remove edilecek ürün veri tabanında birden fazla ise ürününün quantitysini bir azaltır
-		if currentOrders.Quantity > 1 && currentOrders.ProductName == removeOrder.ProductName {
-			filter := bson.D{{"customerid", userID}, {Key: "product.productname", Value: currentOrders.ProductName}}
-			update := bson.D{{Key: "$set", Value: bson.D{{Key: "product.$.quantity", Value: currentOrders.Quantity - removeOrder.Quantity}}}}
-			o.OrderRepo.FindOrderAndUpdate(ctx, filter, update)
+		//eğer order boş ise sipariş listesinden kullanıcı çıkarılır
+		defer func(ctx *gin.Context, userID string) {
+			usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
+			if len(usersOrders.Product) == 0 {
+				filter := bson.D{{"customerid", userID}}
+				o.OrderRepo.DeleteOneOrder(ctx, filter)
+			}
 
-		}
-	}
-	return nil, nil
+		}(ctx, userID)
+		return nil, nil
+	}(usersOrders, removeOrder)
+
+	return "ürün çıkarıldı", nil
 
 }
 

@@ -45,3 +45,10 @@ func (o *OrderCollection) Find(ctx *gin.Context, filter bson.D) (*mongo.Cursor, 
 	}
 	return find, nil
 }
+func (o *OrderCollection) DeleteOneOrder(ctx *gin.Context, filter bson.D) (interface{}, error) {
+	deleteOne, err := o.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return deleteOne, nil
+}
