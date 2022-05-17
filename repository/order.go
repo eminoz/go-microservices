@@ -52,3 +52,17 @@ func (o *OrderCollection) DeleteOneOrder(ctx *gin.Context, filter bson.D) (inter
 	}
 	return deleteOne, nil
 }
+func (o *OrderCollection) GetOrderByProductName(ctx *gin.Context, filter bson.D) (model.Order, error) {
+	var order model.Order
+	err := o.collection.FindOne(ctx, filter).Decode(&order)
+	if err != nil {
+		return order, nil
+	}
+	return order, nil
+}
+func (o *OrderCollection) FindOrderDoNotExist(ctx *gin.Context, pipeline bson.D) bson.M {
+	aggregate, _ := o.collection.Aggregate(ctx, mongo.Pipeline{pipeline})
+	var data bson.M
+	aggregate.All(ctx, &data)
+	return data
+}

@@ -15,6 +15,8 @@ type OrderRepository interface {
 	UpdateOneOrder(ctx *gin.Context, filter bson.D, update bson.D) (interface{}, error)
 	Find(ctx *gin.Context, filter bson.D) (*mongo.Cursor, error)
 	DeleteOneOrder(ctx *gin.Context, filter bson.D) (interface{}, error)
+	GetOrderByProductName(ctx *gin.Context, filter bson.D) (model.Order, error)
+	FindOrderDoNotExist(ctx *gin.Context, pipeline bson.D) bson.M
 }
 type OrderService struct {
 	OrderRepo OrderRepository
@@ -51,7 +53,7 @@ func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 	filter := bson.D{{"customerid", userId}}
 
 	usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
-	if usersOrders.CustomerId == "" || len(usersOrders.Product) == 0 {
+	if usersOrders.CustomerId == "" {
 		addNewOrder, err := o.OrderRepo.CreateAOrder(ctx, orderModel)
 
 		if err != nil {
@@ -60,25 +62,31 @@ func (o *OrderService) AddNewOrder(ctx *gin.Context) (interface{}, error) {
 		return addNewOrder, nil
 	} else {
 
-		for _, incomingOrder := range orderModel.Product {
+		for i, incomingOrder := range orderModel.Product {
+
 			for _, currentOrder := range usersOrders.Product {
 				if incomingOrder.ProductName == currentOrder.ProductName {
 					filter := bson.D{{Key: "customerid", Value: userId}, {Key: "product.productname", Value: currentOrder.ProductName}}
 					update := bson.D{{Key: "$set", Value: bson.D{{"product.$.quantity", currentOrder.Quantity + incomingOrder.Quantity}}}}
 					o.OrderRepo.FindOrderAndUpdate(ctx, filter, update)
 				}
+			}
+
+			//check if document exist is
+			filter := bson.D{{"customerid", userId}, {"product.productname", incomingOrder.ProductName}}
+			orderByProductName, _ := o.OrderRepo.GetOrderByProductName(ctx, filter)
+
+			if len(orderByProductName.Product) == 0 {
+
+				filter := bson.D{{Key: "customerid", Value: userId}}
+				update := bson.D{{Key: "$push", Value: bson.D{{"product", orderModel.Product[i]}}}}
+				o.OrderRepo.UpdateOneOrder(ctx, filter, update)
 
 			}
+
 		}
-		/*
-			filter := bson.D{{Key: "customerid", Value: userId}}
-			update := bson.D{{Key: "$push", Value: bson.D{{"product", orderModel.Product}}}}
-			_, err := o.OrderRepo.AddNewOrder(ctx, filter, update)
-			if err != nil {
-				return nil, err
-			}
-		*/
-		return nil, nil
+
+		return "ürün eklendi", nil
 
 	}
 
@@ -119,7 +127,7 @@ func (o *OrderService) RemoveOneOrder(ctx *gin.Context) (interface{}, error) {
 
 		}
 		//eğer order boş ise sipariş listesinden kullanıcı çıkarılır
-		defer func(ctx *gin.Context, userID string) {
+		func(ctx *gin.Context, userID string) {
 			usersOrders, _ := o.OrderRepo.GetUsersOrders(ctx, filter)
 			if len(usersOrders.Product) == 0 {
 				filter := bson.D{{"customerid", userID}}
