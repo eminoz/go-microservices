@@ -152,5 +152,3 @@ func (o *OrderService) RemoveAllOrderByOrderID(ctx *gin.Context) (interface{}, e
 
 	return deleteOneOrder, nil
 }
-
-// TODO: create delete all order function

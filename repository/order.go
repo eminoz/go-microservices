@@ -15,7 +15,6 @@ func (o *OrderCollection) CreateAOrder(ctx *gin.Context, order *model.Order) (in
 	}
 	return insertOne, nil
 }
-
 func (o *OrderCollection) GetUsersOrders(ctx *gin.Context, filter bson.D) (model.Order, error) {
 	var order model.Order
 	err := o.collection.FindOne(ctx, filter).Decode(&order)
@@ -24,7 +23,6 @@ func (o *OrderCollection) GetUsersOrders(ctx *gin.Context, filter bson.D) (model
 	}
 	return order, nil
 }
-
 func (o *OrderCollection) UpdateOneOrder(ctx *gin.Context, filter bson.D, update bson.D) (interface{}, error) {
 	updateOne, err := o.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -32,7 +30,6 @@ func (o *OrderCollection) UpdateOneOrder(ctx *gin.Context, filter bson.D, update
 	}
 	return updateOne, nil
 }
-
 func (o *OrderCollection) FindOrderAndUpdate(ctx *gin.Context, filter bson.D, update bson.D) interface{} {
 	andUpdate := o.collection.FindOneAndUpdate(ctx, filter, update)
 	return andUpdate
