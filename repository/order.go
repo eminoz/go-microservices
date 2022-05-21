@@ -60,9 +60,3 @@ func (o *OrderCollection) GetOrderByProductName(ctx *gin.Context, filter bson.D)
 	}
 	return order, nil
 }
-func (o *OrderCollection) FindOrderDoNotExist(ctx *gin.Context, pipeline bson.D) bson.M {
-	aggregate, _ := o.collection.Aggregate(ctx, mongo.Pipeline{pipeline})
-	var data bson.M
-	aggregate.All(ctx, &data)
-	return data
-}

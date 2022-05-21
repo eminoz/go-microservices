@@ -5,6 +5,7 @@ import (
 	"github.com/eminoz/go-microservices/model"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -16,7 +17,6 @@ type OrderRepository interface {
 	Find(ctx *gin.Context, filter bson.D) (*mongo.Cursor, error)
 	DeleteOneOrder(ctx *gin.Context, filter bson.D) (interface{}, error)
 	GetOrderByProductName(ctx *gin.Context, filter bson.D) (model.Order, error)
-	FindOrderDoNotExist(ctx *gin.Context, pipeline bson.D) bson.M
 }
 type OrderService struct {
 	OrderRepo OrderRepository
@@ -141,6 +141,16 @@ func (o *OrderService) RemoveOneOrder(ctx *gin.Context) (interface{}, error) {
 	return "ürün çıkarıldı", nil
 
 }
+func (o *OrderService) RemoveAllOrderByOrderID(ctx *gin.Context) (interface{}, error) {
+	id := ctx.Param("id")
+	userID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.D{{"_id", userID}}
+	deleteOneOrder, err := o.OrderRepo.DeleteOneOrder(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
 
-// TODO: create remove one order function
+	return deleteOneOrder, nil
+}
+
 // TODO: create delete all order function

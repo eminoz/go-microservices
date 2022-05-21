@@ -10,6 +10,7 @@ type OrderServices interface {
 	GetUsersOrders(ctx *gin.Context) (interface{}, error)
 	AddNewOrder(ctx *gin.Context) (interface{}, error)
 	RemoveOneOrder(ctx *gin.Context) (interface{}, error)
+	RemoveAllOrderByOrderID(ctx *gin.Context) (interface{}, error)
 }
 type OrderController struct {
 	OrderService OrderServices
@@ -45,4 +46,11 @@ func (o *OrderController) RemoveOneOrder(ctx *gin.Context) {
 		ctx.JSON(201, gin.H{"message": "order not updated"})
 	}
 	ctx.JSON(http.StatusOK, gin.H{"orders": addNewOrder})
+}
+func (o *OrderController) RemoveAllOrderByOrderID(ctx *gin.Context) {
+	removeAllOrderByID, err := o.OrderService.RemoveAllOrderByOrderID(ctx)
+	if err != nil {
+		ctx.JSON(201, gin.H{"message": "order not remove"})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"deleted order": removeAllOrderByID})
 }
